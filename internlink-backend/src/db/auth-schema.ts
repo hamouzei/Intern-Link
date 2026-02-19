@@ -9,6 +9,12 @@ export const user = pgTable("user", {
   image: text("image"),
   createdAt: timestamp("created_at").notNull(),
   updatedAt: timestamp("updated_at").notNull(),
+  university: text("university"),
+  roleApplied: text("role_applied"),
+  githubLink: text("github_link"),
+  portfolioLink: text("portfolio_link"),
+  bio: text("bio"),
+  fullName: text("full_name"),
 });
 
 export const session = pgTable("session", {
@@ -36,5 +42,14 @@ export const account = pgTable("account", {
   password: text("password"),
   createdAt: timestamp("created_at").notNull(),
   updatedAt: timestamp("updated_at").notNull(),
+});
+
+export const verification = pgTable("verification", {
+  id: text("id").primaryKey(),
+  identifier: text("identifier").notNull(),
+  value: text("value").notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at"),
+  updatedAt: timestamp("updated_at"),
 });
 

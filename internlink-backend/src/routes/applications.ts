@@ -1,7 +1,8 @@
 import { Router, Response } from "express";
 import { AuthRequest, verifyJwt } from "../middleware/auth";
 import { db } from "../db";
-import { users, companies, applications, documents } from "../db/schema";
+import { companies, applications, documents } from "../db/schema";
+import { user } from "../db/auth-schema";
 import { eq, and, sql } from "drizzle-orm";
 import { generateInternshipEmail } from "../services/ai";
 import { sendApplicationEmail } from "../services/email";
@@ -14,22 +15,22 @@ router.post("/generate", verifyJwt, async (req: AuthRequest, res: Response) => {
   if (!company_id) { res.status(400).json({ error: "Missing company_id" }); return; }
 
   try {
-    const [user] = await db.select().from(users).where(eq(users.id, req.userId!)).limit(1);
+    const [userRecord] = await db.select().from(user).where(eq(user.id, req.userId!)).limit(1);
     const [company] = await db.select().from(companies).where(eq(companies.id, company_id)).limit(1);
 
-    if (!user || !company) { res.status(404).json({ error: "User or Company not found" }); return; }
+    if (!userRecord || !company) { res.status(404).json({ error: "User or Company not found" }); return; }
 
     // Required fields check
-    if (!user.university || !user.roleApplied || !user.bio) {
+    if (!userRecord.university || !userRecord.roleApplied || !userRecord.bio) {
       res.status(400).json({ error: "Profile incomplete. Please complete your profile first." });
       return;
     }
 
     const emailContent = await generateInternshipEmail(
-      user.fullName,
-      user.university,
-      user.roleApplied,
-      user.bio,
+      userRecord.name, // Better Auth uses 'name', schema has 'fullName' mapped? auth-schema has 'name' and 'fullName'. Let's use name as primary.
+      userRecord.university,
+      userRecord.roleApplied,
+      userRecord.bio,
       company.name
     );
 
@@ -62,11 +63,11 @@ router.post("/send", verifyJwt, async (req: AuthRequest, res: Response) => {
       return;
     }
 
-    const [user] = await db.select().from(users).where(eq(users.id, req.userId!)).limit(1);
+    const [userRecord] = await db.select().from(user).where(eq(user.id, req.userId!)).limit(1);
     const [doc] = await db.select().from(documents).where(eq(documents.userId, req.userId!)).limit(1);
     const [company] = await db.select().from(companies).where(eq(companies.id, company_id)).limit(1);
 
-    if (!user || !company || !doc || !doc.cvUrl || !doc.supportLetterUrl) {
+    if (!userRecord || !company || !doc || !doc.cvUrl || !doc.supportLetterUrl) {
       res.status(400).json({ error: "Missing proflie or documents." });
       return;
     }
@@ -77,8 +78,8 @@ router.post("/send", verifyJwt, async (req: AuthRequest, res: Response) => {
       email_subject,
       email_body,
       [
-        { filename: `${user.fullName.replace(/\s+/g, '_')}_CV.pdf`, path: doc.cvUrl },
-        { filename: `${user.fullName.replace(/\s+/g, '_')}_Letter.pdf`, path: doc.supportLetterUrl },
+        { filename: `${userRecord.name.replace(/\s+/g, '_')}_CV.pdf`, path: doc.cvUrl },
+        { filename: `${userRecord.name.replace(/\s+/g, '_')}_Letter.pdf`, path: doc.supportLetterUrl },
       ]
     );
 
@@ -105,7 +106,7 @@ router.get("/", verifyJwt, async (req: AuthRequest, res: Response) => {
       .select({
         id: applications.id,
         companyName: companies.name,
-        roleApplied: users.roleApplied,
+        roleApplied: user.roleApplied,
         status: applications.status,
         sentAt: applications.sentAt,
         emailSubject: applications.emailSubject,
@@ -113,7 +114,7 @@ router.get("/", verifyJwt, async (req: AuthRequest, res: Response) => {
       })
       .from(applications)
       .innerJoin(companies, eq(applications.companyId, companies.id))
-      .innerJoin(users, eq(applications.userId, users.id))
+      .innerJoin(user, eq(applications.userId, user.id))
       .where(eq(applications.userId, req.userId!))
       .orderBy(sql`${applications.sentAt} DESC`);
 
