@@ -12,7 +12,7 @@ export async function generateInternshipEmail(
   companyName: string
 ): Promise<{ subject: string; body: string }> {
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     const prompt = `
         You are a professional career assistant helping a student write a cold email for an internship application.
