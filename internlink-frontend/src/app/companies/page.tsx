@@ -10,6 +10,8 @@ interface Company {
     name: string;
     email: string;
     address: string;
+    telephone: string;
+    website: string;
     acceptsInterns: boolean;
 }
 
@@ -124,7 +126,34 @@ export default function CompaniesPage() {
                                         {company.acceptsInterns ? "✓ Accepting" : "✗ Not Accepting"}
                                     </span>
                                 </div>
-                                <p className="text-sm text-gray-400">📍 {company.address}</p>
+                                <div className="flex flex-col gap-1.5 text-sm text-gray-400">
+                                    {company.address && <p>📍 {company.address}</p>}
+                                    {company.telephone && <p>📞 {company.telephone}</p>}
+                                    {company.website && (
+                                        <p>
+                                            🌐{" "}
+                                            <a
+                                                href={company.website}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-[#f5c842] hover:underline"
+                                            >
+                                                {company.website.replace(/^https?:\/\/(www\.)?/, "")}
+                                            </a>
+                                        </p>
+                                    )}
+                                    {company.email && (
+                                        <p>
+                                            📧{" "}
+                                            <a
+                                                href={`mailto:${company.email}`}
+                                                className="text-[#f5c842] hover:underline"
+                                            >
+                                                {company.email}
+                                            </a>
+                                        </p>
+                                    )}
+                                </div>
                                 <button
                                     onClick={() => handleApply(company)}
                                     disabled={!company.acceptsInterns || applying === company.id}

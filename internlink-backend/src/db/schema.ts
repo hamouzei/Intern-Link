@@ -28,6 +28,8 @@ export const companies = pgTable('companies', {
   name: text('name').notNull(),
   email: text('email').notNull(),
   address: text('address'),
+  telephone: text('telephone'),
+  website: text('website'),
   acceptsInterns: boolean('accepts_interns').default(true),
   createdAt: timestamp('created_at').defaultNow(),
 });
