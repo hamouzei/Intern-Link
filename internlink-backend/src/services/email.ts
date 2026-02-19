@@ -1,0 +1,32 @@
+import nodemailer from "nodemailer";
+import * as dotenv from "dotenv";
+dotenv.config();
+
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_PASS,
+  },
+});
+
+export async function sendApplicationEmail(
+  to: string,
+  subject: string,
+  body: string,
+  attachments: { filename: string; path: string }[]
+) {
+  try {
+    await transporter.sendMail({
+      from: process.env.GMAIL_USER,
+      to,
+      subject,
+      text: body,
+      attachments,
+    });
+    console.log(`Email sent to ${to}`);
+  } catch (error) {
+    console.error("Email sending failed:", error);
+    throw error;
+  }
+}
