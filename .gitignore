@@ -1,0 +1,27 @@
+# Root gitignore to ensure nested projects are clean
+
+# Dependencies
+**/node_modules/
+
+# Environment Variables
+**/.env
+**/.env.local
+**/.env.*
+
+# Build Outputs
+**/dist/
+**/build/
+**/.next/
+**/out/
+
+# Logs
+**/*.log
+npm-debug.log*
+
+# System
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
