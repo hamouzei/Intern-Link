@@ -14,7 +14,7 @@ export async function sendApplicationEmail(
   to: string,
   subject: string,
   body: string,
-  attachments: { filename: string; path: string }[]
+  attachments: { filename: string; content: Buffer }[]
 ) {
   try {
     await transporter.sendMail({
@@ -30,3 +30,5 @@ export async function sendApplicationEmail(
     throw error;
   }
 }
+
+

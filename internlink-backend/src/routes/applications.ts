@@ -6,6 +6,7 @@ import { user } from "../db/auth-schema";
 import { eq, and, sql } from "drizzle-orm";
 import { generateInternshipEmail } from "../services/ai";
 import { sendApplicationEmail } from "../services/email";
+import { downloadCloudinaryFile } from "../services/cloudinary";
 
 const router = Router();
 
@@ -72,14 +73,21 @@ router.post("/send", verifyJwt, async (req: AuthRequest, res: Response) => {
       return;
     }
 
-    // Send email
+    // Download attachments from Cloudinary using backend credentials (bypasses access restrictions)
+    const baseName = userRecord.name.replace(/\s+/g, '_');
+    const [cvBuffer, letterBuffer] = await Promise.all([
+      downloadCloudinaryFile(doc.cvUrl!),
+      downloadCloudinaryFile(doc.supportLetterUrl!),
+    ]);
+
+    // Send email with buffer attachments
     await sendApplicationEmail(
       company.email,
       email_subject,
       email_body,
       [
-        { filename: `${userRecord.name.replace(/\s+/g, '_')}_CV.pdf`, path: doc.cvUrl },
-        { filename: `${userRecord.name.replace(/\s+/g, '_')}_Letter.pdf`, path: doc.supportLetterUrl },
+        { filename: `${baseName}_CV.pdf`, content: cvBuffer },
+        { filename: `${baseName}_Letter.pdf`, content: letterBuffer },
       ]
     );
 
@@ -93,9 +101,9 @@ router.post("/send", verifyJwt, async (req: AuthRequest, res: Response) => {
     });
 
     res.json({ success: true });
-  } catch (err) {
+  } catch (err: any) {
     console.error("Send application error:", err);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ error: "Internal server error", detail: err?.message || String(err) });
   }
 });
 
