@@ -3,6 +3,21 @@ import { companies } from "./schema";
 
 const seedCompanies = [
   {
+    name: "Hamouz",
+    email: "hamuzy07@gmail.com",
+    address: "Sabiyan, Dire Dawa",
+    telephone: "+251938391771",
+    website: "https://hamouz.vercel.app",
+    acceptsInterns: true,
+  },
+  {
+    name: "iceaddis",
+    email: "contact@iceaddis.com",
+    address: "Zewedu Building, Qelebet Menged, Bole",
+    telephone: "+251 11 667 4804",
+    website: "https://www.iceaddis.com",
+    acceptsInterns: true,
+  }, {
     name: "iceaddis",
     email: "contact@iceaddis.com",
     address: "Zewedu Building, Qelebet Menged, Bole",
