@@ -143,7 +143,7 @@ export default function CompleteProfilePage() {
                     </Field>
 
                     {/* GitHub */}
-                    <Field label="GitHub Profile">
+                    <Field label="GitHub Profile (optional)">
                         <input
                             type="url"
                             value={form.githubLink}

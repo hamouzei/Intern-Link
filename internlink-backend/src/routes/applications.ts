@@ -28,11 +28,13 @@ router.post("/generate", verifyJwt, async (req: AuthRequest, res: Response) => {
     }
 
     const emailContent = await generateInternshipEmail(
-      userRecord.name, // Better Auth uses 'name', schema has 'fullName' mapped? auth-schema has 'name' and 'fullName'. Let's use name as primary.
+      userRecord.name,
       userRecord.university,
       userRecord.roleApplied,
       userRecord.bio,
-      company.name
+      company.name,
+      userRecord.githubLink,
+      userRecord.portfolioLink
     );
 
     res.json(emailContent);
