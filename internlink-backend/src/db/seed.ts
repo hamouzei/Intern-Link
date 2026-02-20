@@ -17,13 +17,6 @@ const seedCompanies = [
     telephone: "+251 11 667 4804",
     website: "https://www.iceaddis.com",
     acceptsInterns: true,
-  }, {
-    name: "iceaddis",
-    email: "contact@iceaddis.com",
-    address: "Zewedu Building, Qelebet Menged, Bole",
-    telephone: "+251 11 667 4804",
-    website: "https://www.iceaddis.com",
-    acceptsInterns: true,
   },
   {
     name: "Uptrine Technologies",
@@ -124,8 +117,10 @@ const seedCompanies = [
 ];
 
 async function seed() {
+  console.log("🗑️  Clearing existing companies...");
+  await db.delete(companies);
   console.log("🌱 Seeding companies...");
-  await db.insert(companies).values(seedCompanies).onConflictDoNothing();
+  await db.insert(companies).values(seedCompanies);
   console.log(`✅ Seeded ${seedCompanies.length} companies`);
   process.exit(0);
 }
