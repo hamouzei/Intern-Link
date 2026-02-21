@@ -34,21 +34,16 @@ export async function uploadFile(
 
 /**
  * Download a Cloudinary file using a private download URL.
- * This uses the Cloudinary API endpoint (not CDN) with proper authentication,
- * which works even when the account has strict access settings.
+ * For raw resources, the file extension is part of the public_id.
  */
 export async function downloadCloudinaryFile(secureUrl: string): Promise<Buffer> {
-  // Extract public_id from the secure URL
+  // Extract public_id from the secure URL (for raw resources, extension is part of the ID)
   const match = secureUrl.match(/\/upload\/(?:v\d+\/)?(.+)$/);
   if (!match) throw new Error(`Cannot parse Cloudinary URL: ${secureUrl}`);
-  const publicIdWithExt = match[1]; // e.g. "internlink/cv/user-cv.pdf"
-
-  // Strip file extension to get pure public_id
-  const publicId = publicIdWithExt.replace(/\.[^/.]+$/, "");
-  const ext = publicIdWithExt.match(/\.([^/.]+)$/)?.[1] || "pdf";
+  const publicId = match[1]; // e.g. "internlink/cv/user-cv.pdf" (full ID with extension)
 
   // Generate a time-limited authenticated download URL via the Cloudinary API
-  const downloadUrl = cloudinary.utils.private_download_url(publicId, ext, {
+  const downloadUrl = cloudinary.utils.private_download_url(publicId, "", {
     resource_type: "raw",
     expires_at: Math.floor(Date.now() / 1000) + 300, // 5 minutes
   });
