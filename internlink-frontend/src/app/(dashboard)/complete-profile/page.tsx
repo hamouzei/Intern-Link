@@ -193,7 +193,7 @@ export default function CompleteProfilePage() {
                                 </Field>
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                    <Field label="GitHub Profile">
+                                    <Field label="GitHub Profile (Optional)">
                                         <Input
                                             type="url"
                                             value={form.githubLink}
@@ -202,7 +202,7 @@ export default function CompleteProfilePage() {
                                         />
                                     </Field>
 
-                                    <Field label="Portfolio Link">
+                                    <Field label="Portfolio Link (Optional)">
                                         <Input
                                             type="url"
                                             value={form.portfolioLink}

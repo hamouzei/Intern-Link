@@ -42,11 +42,11 @@ export default function LandingPage() {
                     AI-Powered Internship Applications
                 </div>
                 <h1 className="text-6xl md:text-8xl font-extrabold leading-none mb-6 text-foreground max-w-4xl tracking-tight">
-                    Apply Smarter.<br />
-                    <span className="text-primary">Land Faster.</span>
+                    Generate. Apply.<br />
+                    <span className="text-primary">Land the Offer.</span>
                 </h1>
                 <p className="text-lg text-gray-400 max-w-xl mb-12 leading-relaxed">
-                    InternLink generates professional internship emails using Gemini AI, sends your CV and supporting letter, and tracks every application — all in one place.
+                    Stop sending generic emails. InternLink uses Gemini AI to craft highly personalized internship applications, seamlessly sending your CV while tracking your progress—putting your internship search on autopilot.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
                     <button
