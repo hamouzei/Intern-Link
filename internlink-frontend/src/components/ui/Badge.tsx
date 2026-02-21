@@ -12,9 +12,9 @@ function Badge({ className, variant = "default", ...props }: BadgeProps) {
         "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
         {
           "border-transparent bg-primary text-primary-foreground": variant === "default",
-          "border-transparent bg-emerald-500/10 text-emerald-500": variant === "success",
+          "border-transparent bg-[#15803D]/10 text-[#15803D]": variant === "success",
           "border-transparent bg-yellow-500/10 text-yellow-500": variant === "warning",
-          "border-transparent bg-red-500/10 text-red-500": variant === "danger",
+          "border-transparent bg-[#B91C1C]/10 text-[#B91C1C]": variant === "danger",
           "text-foreground border-border": variant === "outline"
         },
         className

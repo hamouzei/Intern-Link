@@ -79,12 +79,12 @@ export default function DashboardPage() {
         <StatsCard 
           title="Pending Responses" 
           value={isLoading ? null : stats.applications} // Mocking pending as all for now
-          icon={<FileText className="w-5 h-5 text-emerald-500" />} 
+          icon={<FileText className="w-5 h-5 text-[#15803D]" />} 
         />
         <StatsCard 
           title="Companies Available" 
           value={isLoading ? null : stats.companies} 
-          icon={<Building2 className="w-5 h-5 text-indigo-400" />} 
+          icon={<Building2 className="w-5 h-5 text-primary" />} 
         />
       </div>
 

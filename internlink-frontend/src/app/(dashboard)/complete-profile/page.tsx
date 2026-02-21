@@ -290,12 +290,12 @@ function FileUploadZone({ label, file, inputRef, onChange }: FileUploadZoneProps
             <div 
                 onClick={() => inputRef.current?.click()}
                 className={`border-2 border-dashed rounded-xl p-4 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-200 h-32 ${
-                    file ? "border-emerald-500/50 bg-emerald-500/5 hover:bg-emerald-500/10" : "border-border bg-background hover:bg-surface/50"
+                    file ? "border-[#15803D]/50 bg-[#15803D]/5 hover:bg-[#15803D]/10" : "border-border bg-background hover:bg-surface/50"
                 }`}
             >
                 {file ? (
                     <>
-                        <CheckCircle2 className="w-8 h-8 text-emerald-500 mb-2" />
+                        <CheckCircle2 className="w-8 h-8 text-[#15803D] mb-2" />
                         <span className="text-sm font-medium text-foreground truncate max-w-full px-2">{file.name}</span>
                         <span className="text-xs text-muted-foreground mt-1">Click to replace</span>
                     </>

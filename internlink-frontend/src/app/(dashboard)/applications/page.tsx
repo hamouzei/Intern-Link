@@ -169,5 +169,5 @@ function StatusBadge({ status }: { status: string }) {
     }
     
     // Default (sent, pending, etc)
-    return <Badge variant="default" className="capitalize shrink-0 bg-primary/10 text-primary border-primary/20">{status}</Badge>;
+    return <Badge className="capitalize shrink-0 bg-primary/10 text-primary border-primary/20 hover:bg-primary/20">{status}</Badge>;
 }

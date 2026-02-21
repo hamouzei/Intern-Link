@@ -11,41 +11,48 @@
   --color-border: var(--border);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
-  
+
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 }
 
-:root, .dark {
-  /* Default base is Dark Mode as requested */
-  --background: #0F172A; /* Soft Dark */
-  --foreground: #F8FAFC; /* Primary text */
-  --surface: #1E293B; /* Cards */
-  --border: #334155; 
-  --muted: #1E293B;
-  --muted-foreground: #94A3B8; /* Secondary text */
-  
-  --primary: #4F46E5; /* Deep Indigo */
+:root,
+.dark {
+  /* Minimal Graphite & Soft Clay Theme */
+  --background: #111111;
+  /* Deep Graphite */
+  --foreground: #F5F5F5;
+  /* Primary text */
+  --surface: #1A1A1A;
+  /* Cards */
+  --border: #2A2A2A;
+  --muted: #1A1A1A;
+  --muted-foreground: #A3A3A3;
+  /* Secondary text */
+
+  --primary: #D97706;
+  /* Terracotta */
   --primary-foreground: #FFFFFF;
-  
-  --accent: #10B981; /* Emerald */
+
+  --accent: #15803D;
+  /* Soft Sage */
   --accent-foreground: #FFFFFF;
 }
 
 body {
   background-color: var(--background);
   color: var(--foreground);
-  /* The subtle radial gradient: Indigo glow at top-right corner */
-  background-image: radial-gradient(circle at top right, rgba(79, 70, 229, 0.08) 0%, transparent 40%);
-  background-attachment: fixed;
-  background-repeat: no-repeat;
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 /* Base utility classes for typography */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-weight: 600;
   letter-spacing: -0.025em;
 }
-
