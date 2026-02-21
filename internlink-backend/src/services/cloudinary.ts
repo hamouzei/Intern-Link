@@ -33,26 +33,29 @@ export async function uploadFile(
 }
 
 /**
- * Download a Cloudinary file using API credentials (Basic Auth).
- * This bypasses any account-level access restrictions.
+ * Download a Cloudinary file using a private download URL.
+ * This uses the Cloudinary API endpoint (not CDN) with proper authentication,
+ * which works even when the account has strict access settings.
  */
 export async function downloadCloudinaryFile(secureUrl: string): Promise<Buffer> {
-  const apiKey = process.env.CLOUDINARY_API_KEY;
-  const apiSecret = process.env.CLOUDINARY_API_SECRET;
+  // Extract public_id from the secure URL
+  const match = secureUrl.match(/\/upload\/(?:v\d+\/)?(.+)$/);
+  if (!match) throw new Error(`Cannot parse Cloudinary URL: ${secureUrl}`);
+  const publicIdWithExt = match[1]; // e.g. "internlink/cv/user-cv.pdf"
 
-  if (!apiKey || !apiSecret) {
-    throw new Error("Missing CLOUDINARY_API_KEY or CLOUDINARY_API_SECRET");
-  }
+  // Strip file extension to get pure public_id
+  const publicId = publicIdWithExt.replace(/\.[^/.]+$/, "");
+  const ext = publicIdWithExt.match(/\.([^/.]+)$/)?.[1] || "pdf";
 
-  // Use Basic Auth header with API credentials
-  const authHeader = "Basic " + Buffer.from(`${apiKey}:${apiSecret}`).toString("base64");
-
-  const response = await fetch(secureUrl, {
-    headers: { Authorization: authHeader },
+  // Generate a time-limited authenticated download URL via the Cloudinary API
+  const downloadUrl = cloudinary.utils.private_download_url(publicId, ext, {
+    resource_type: "raw",
+    expires_at: Math.floor(Date.now() / 1000) + 300, // 5 minutes
   });
 
+  const response = await fetch(downloadUrl);
   if (!response.ok) {
-    throw new Error(`Cloudinary download failed: ${response.status} ${response.statusText} (url: ${secureUrl})`);
+    throw new Error(`Cloudinary download failed: ${response.status} ${response.statusText}`);
   }
 
   return Buffer.from(await response.arrayBuffer());
