@@ -33,26 +33,28 @@ export async function uploadFile(
 }
 
 /**
- * Download a Cloudinary file using a signed URL (bypasses account access restrictions).
+ * Download a Cloudinary file using API credentials (Basic Auth).
+ * This bypasses any account-level access restrictions.
  */
 export async function downloadCloudinaryFile(secureUrl: string): Promise<Buffer> {
-  // Extract public_id from the secure URL (strip /upload/vXXX/ prefix)
-  const match = secureUrl.match(/\/upload\/(?:v\d+\/)?(.+)$/);
-  if (!match) throw new Error(`Cannot parse Cloudinary URL: ${secureUrl}`);
-  // Remove file extension from public_id for the SDK call
-  const publicIdWithExt = match[1]; // e.g. "internlink/cv/user-cv.pdf"
+  const apiKey = process.env.CLOUDINARY_API_KEY;
+  const apiSecret = process.env.CLOUDINARY_API_SECRET;
 
-  // Generate a short-lived signed URL using our API credentials
-  const signedUrl = cloudinary.url(publicIdWithExt, {
-    resource_type: "raw",
-    sign_url: true,
-    type: "upload",
-    secure: true,
+  if (!apiKey || !apiSecret) {
+    throw new Error("Missing CLOUDINARY_API_KEY or CLOUDINARY_API_SECRET");
+  }
+
+  // Use Basic Auth header with API credentials
+  const authHeader = "Basic " + Buffer.from(`${apiKey}:${apiSecret}`).toString("base64");
+
+  const response = await fetch(secureUrl, {
+    headers: { Authorization: authHeader },
   });
 
-  const response = await fetch(signedUrl);
   if (!response.ok) {
-    throw new Error(`Failed to download from Cloudinary: ${response.status} ${response.statusText}`);
+    throw new Error(`Cloudinary download failed: ${response.status} ${response.statusText} (url: ${secureUrl})`);
   }
+
   return Buffer.from(await response.arrayBuffer());
 }
+
