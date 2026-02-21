@@ -33,13 +33,26 @@ export async function uploadFile(
 }
 
 /**
- * Download a Cloudinary file directly via its public secure_url.
- * Files are uploaded with access_mode: "public" so a simple fetch works.
+ * Download a Cloudinary file using a signed URL (bypasses account access restrictions).
  */
 export async function downloadCloudinaryFile(secureUrl: string): Promise<Buffer> {
-  const response = await fetch(secureUrl);
+  // Extract public_id from the secure URL (strip /upload/vXXX/ prefix)
+  const match = secureUrl.match(/\/upload\/(?:v\d+\/)?(.+)$/);
+  if (!match) throw new Error(`Cannot parse Cloudinary URL: ${secureUrl}`);
+  // Remove file extension from public_id for the SDK call
+  const publicIdWithExt = match[1]; // e.g. "internlink/cv/user-cv.pdf"
+
+  // Generate a short-lived signed URL using our API credentials
+  const signedUrl = cloudinary.url(publicIdWithExt, {
+    resource_type: "raw",
+    sign_url: true,
+    type: "upload",
+    secure: true,
+  });
+
+  const response = await fetch(signedUrl);
   if (!response.ok) {
-    throw new Error(`Failed to download file from Cloudinary: ${response.status} ${response.statusText} (url: ${secureUrl})`);
+    throw new Error(`Failed to download from Cloudinary: ${response.status} ${response.statusText}`);
   }
   return Buffer.from(await response.arrayBuffer());
 }
