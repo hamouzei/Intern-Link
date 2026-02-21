@@ -8,7 +8,9 @@ dotenv.config();
 dns.setDefaultResultOrder("ipv4first");
 
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false, // upgrades to TLS via STARTTLS
   auth: {
     user: process.env.GMAIL_USER,
     pass: process.env.GMAIL_PASS,
