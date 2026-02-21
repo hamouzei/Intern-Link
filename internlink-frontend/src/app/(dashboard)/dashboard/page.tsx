@@ -116,13 +116,13 @@ export default function DashboardPage() {
                     </td>
                   </tr>
                 ) : (
-                  recentApps.map((app) => (
-                    <tr key={app.id} className="hover:bg-white/5 transition-colors">
-                      <td className="px-6 py-4 font-medium text-foreground">{app.companyId}</td>
-                      <td className="px-6 py-4 text-muted-foreground">
-                        {new Date(app.createdAt).toLocaleDateString()}
-                      </td>
-                      <td className="px-6 py-4">
+                    recentApps.map((app) => (
+                      <tr key={app.id} className="hover:bg-white/5 transition-colors">
+                        <td className="px-6 py-4 font-medium text-foreground">{app.companyName || app.companyId || "Unknown Company"}</td>
+                        <td className="px-6 py-4 text-muted-foreground">
+                          {app.createdAt ? new Date(app.createdAt).toLocaleDateString() : "Pending"}
+                        </td>
+                        <td className="px-6 py-4">
                         <Badge variant="default">Sent</Badge>
                       </td>
                     </tr>
