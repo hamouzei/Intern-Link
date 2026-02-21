@@ -46,7 +46,7 @@ export default function LandingPage() {
                     <span className="text-primary">Land the Offer.</span>
                 </h1>
                 <p className="text-lg text-gray-400 max-w-xl mb-12 leading-relaxed">
-                    Stop sending generic emails. InternLink uses Gemini AI to craft highly personalized internship applications, seamlessly sending your CV while tracking your progress—putting your internship search on autopilot.
+                    Stop sending generic emails. InternLink uses AI to craft highly personalized internship applications, seamlessly sending your CV while tracking your progress—putting your internship search on autopilot.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
                     <button
@@ -77,7 +77,7 @@ export default function LandingPage() {
             <section className="max-w-5xl mx-auto px-6 pb-32 grid grid-cols-1 md:grid-cols-3 gap-6">
                 {[
                     { emoji: "🎯", title: "Profile Once", desc: "Set up your profile and upload your CV. Reuse it for every application." },
-                    { emoji: "🤖", title: "Gemini AI Emails", desc: "Personalized, professional emails tailored to each company, generated in seconds." },
+                    { emoji: "🤖", title: "AI Emails", desc: "Personalized, professional emails tailored to each company, generated in seconds." },
                     { emoji: "📬", title: "One-Click Send", desc: "Preview, edit if needed, and send with attachments straight from the platform." },
                 ].map((f) => (
                     <div key={f.title} className="p-7 rounded-2xl bg-surface border border-border hover:border-primary/50 transition-colors duration-300">
