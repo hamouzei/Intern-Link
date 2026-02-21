@@ -1,6 +1,11 @@
 import nodemailer from "nodemailer";
+import dns from "dns";
 import * as dotenv from "dotenv";
 dotenv.config();
+
+// Force IPv4 for DNS resolution. 
+// Railway's IPv6 outbound routing can sometimes fail with ENETUNREACH when connecting to Gmail's SMTP.
+dns.setDefaultResultOrder("ipv4first");
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
