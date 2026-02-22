@@ -3,6 +3,14 @@ import { companies } from "./schema";
 
 const seedCompanies = [
   {
+    name: "Melaverse Tech",
+    email: "melaverseinfo@gmail.com",
+    address: "Bole, Addis Ababa",
+    telephone: "+251997835781",
+    website: "https://melaverse-tech.com",
+    acceptsInterns: true,
+  },
+  {
     name: "Hamouz",
     email: "hamuzy07@gmail.com",
     address: "Sabiyan, Dire Dawa",
