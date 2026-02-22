@@ -87,6 +87,79 @@ export default function LandingPage() {
                     </div>
                 ))}
             </section>
+            {/* How It Works Section */}
+            <section className="bg-[#0A0A0A] py-32 border-t border-white/5 relative overflow-hidden">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent"></div>
+                <div className="max-w-6xl mx-auto px-6">
+                    <div className="text-center mb-20">
+                        <span className="text-primary font-medium tracking-wide text-sm uppercase mb-3 block">Process</span>
+                        <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6 tracking-tight">How It Works</h2>
+                        <p className="text-gray-400 text-lg max-w-2xl mx-auto">Three simple steps to supercharge your internship search and land the role you deserve.</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
+                        {/* Connecting Line */}
+                        <div className="hidden md:block absolute top-[45px] left-[15%] right-[15%] h-[2px] bg-gradient-to-r from-transparent via-border to-transparent"></div>
+
+                        {[
+                            {
+                                step: "01.",
+                                title: "Build Your Profile",
+                                desc: "Upload your CV and support letter once. Tell us your target role and let InternLink handle the rest."
+                            },
+                            {
+                                step: "02.",
+                                title: "Match & Generate",
+                                desc: "Browse curated top companies. Click 'Apply', and our AI instantly drafts a perfectly tailored cover letter."
+                            },
+                            {
+                                step: "03.",
+                                title: "Send & Connect",
+                                desc: "Send applications directly from the platform. Replies from HR come straight to your unified dashboard inbox."
+                            }
+                        ].map((s, i) => (
+                            <div key={i} className="relative z-10 flex flex-col items-center text-center group">
+                                <div className="w-[90px] h-[90px] rounded-full bg-[#111] border border-border flex items-center justify-center text-2xl font-black text-primary/80 mb-8 shadow-xl group-hover:scale-110 group-hover:border-primary/50 transition-all duration-500 relative">
+                                    <div className="absolute inset-0 rounded-full bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl"></div>
+                                    <span className="relative z-10">{s.step}</span>
+                                </div>
+                                <h3 className="text-xl font-bold text-foreground mb-4">{s.title}</h3>
+                                <p className="text-gray-400 leading-relaxed text-sm md:text-base">{s.desc}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* CTA Box */}
+            <section className="py-24 px-6 relative">
+                <div className="max-w-5xl mx-auto">
+                    <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-b from-surface/80 to-background border border-border/50 p-12 md:p-20 text-center shadow-2xl">
+                        {/* Background Glows */}
+                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-[500px] bg-primary/20 rounded-full blur-[120px] pointer-events-none"></div>
+
+                        <div className="relative z-10">
+                            <h2 className="text-4xl md:text-6xl font-extrabold text-white mb-8 tracking-tight max-w-3xl mx-auto leading-tight">
+                                Ready to Land Your <br className="hidden md:block" /> Dream Internship?
+                            </h2>
+                            <p className="text-xl text-gray-400 mb-12 max-w-2xl mx-auto leading-relaxed">
+                                Join thousands of students who have automated their internship search and landed offers at top companies.
+                            </p>
+                            
+                            <button
+                                onClick={() => signIn.social({ provider: "google" })}
+                                className="group relative inline-flex items-center justify-center gap-3 px-10 py-5 bg-primary text-primary-foreground font-bold rounded-2xl hover:bg-[#B45309] transition-all duration-300 active:scale-[0.98] shadow-xl overflow-hidden"
+                            >
+                                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out"></div>
+                                <span className="relative z-10 text-lg">Get Started For Free</span>
+                                <svg className="w-5 h-5 relative z-10 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
         </main>
     );
 }
