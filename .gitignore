@@ -8,6 +8,14 @@
 **/.env.local
 **/.env.*
 
+# Keys and Secrets
+*.pem
+*.key
+*.cert
+*.crt
+*secret*
+*credential*
+
 # Build Outputs
 **/dist/
 **/build/
