@@ -39,18 +39,45 @@ export default function CompleteProfilePage() {
         bio: "",
     });
     
-    useEffect(() => {
-      if (session?.user) {
-        setForm(f => ({ ...f, fullName: session.user.name || "" }));
-      }
-    }, [session]);
-
+    const [existingCvUrl, setExistingCvUrl] = useState<string | null>(null);
+    const [existingLetterUrl, setExistingLetterUrl] = useState<string | null>(null);
     const [cvFile, setCvFile] = useState<File | null>(null);
     const [letterFile, setLetterFile] = useState<File | null>(null);
     const [loading, setLoading] = useState(false);
+    const [initialLoading, setInitialLoading] = useState(true);
 
     const cvRef = useRef<HTMLInputElement>(null);
     const letterRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        if (!token) return;
+        let isMounted = true;
+
+        async function loadProfile() {
+            try {
+                const data = await apiRequest<any>("/profile", {}, token);
+                if (isMounted && data) {
+                    setForm({
+                        fullName: data.fullName || data.name || session?.user?.name || "",
+                        university: data.university || "",
+                        roleApplied: data.roleApplied || "",
+                        githubLink: data.githubLink || "",
+                        portfolioLink: data.portfolioLink || "",
+                        bio: data.bio || "",
+                    });
+                    if (data.documents?.cvUrl) setExistingCvUrl(data.documents.cvUrl);
+                    if (data.documents?.supportLetterUrl) setExistingLetterUrl(data.documents.supportLetterUrl);
+                }
+            } catch (e) {
+                console.error("Failed to load profile:", e);
+            } finally {
+                if (isMounted) setInitialLoading(false);
+            }
+        }
+
+        loadProfile();
+        return () => { isMounted = false; };
+    }, [token, session]);
 
     const handleFileChange = (
         e: React.ChangeEvent<HTMLInputElement>,
@@ -104,9 +131,11 @@ export default function CompleteProfilePage() {
     if (isPending) return null;
 
     // Calculate completion progress
+    const hasCv = Boolean(cvFile || existingCvUrl);
+    const hasLetter = Boolean(letterFile || existingLetterUrl);
     const requiredFieldsFilled = [form.fullName, form.university, form.roleApplied, form.bio].filter(Boolean).length;
     const optionalFieldsFilled = [form.githubLink, form.portfolioLink].filter(Boolean).length;
-    const filesUploaded = [cvFile, letterFile].filter(Boolean).length;
+    const filesUploaded = [hasCv, hasLetter].filter(Boolean).length;
     const totalScore = requiredFieldsFilled * 15 + optionalFieldsFilled * 5 + filesUploaded * 15;
     const progress = Math.min(100, totalScore);
 
@@ -228,13 +257,15 @@ export default function CompleteProfilePage() {
                                 <div className="pt-4 border-t border-border grid grid-cols-1 sm:grid-cols-2 gap-6">
                                     <FileUploadZone 
                                         label="Resume / CV" 
-                                        file={cvFile} 
+                                        file={cvFile}
+                                        existingUrl={existingCvUrl}
                                         inputRef={cvRef} 
                                         onChange={e => handleFileChange(e, setCvFile)} 
                                     />
                                     <FileUploadZone 
                                         label="Supporting Letter" 
-                                        file={letterFile} 
+                                        file={letterFile}
+                                        existingUrl={existingLetterUrl}
                                         inputRef={letterRef} 
                                         onChange={e => handleFileChange(e, setLetterFile)} 
                                     />
@@ -243,7 +274,7 @@ export default function CompleteProfilePage() {
                                 <div className="pt-4 flex justify-end">
                                     <Button type="submit" disabled={loading} size="lg" className="w-full sm:w-auto">
                                         {loading ? (
-                                            <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Saving Profile...</>
+                                             <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Saving Profile...</>
                                         ) : (
                                             "Save & Continue"
                                         )}
@@ -272,11 +303,14 @@ function Field({ label, required, children }: { label: string; required?: boolea
 interface FileUploadZoneProps {
     label: string;
     file: File | null;
+    existingUrl?: string | null;
     inputRef: React.RefObject<HTMLInputElement | null>;
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-function FileUploadZone({ label, file, inputRef, onChange }: FileUploadZoneProps) {
+function FileUploadZone({ label, file, existingUrl, inputRef, onChange }: FileUploadZoneProps) {
+    const isUploaded = Boolean(file || existingUrl);
+
     return (
         <div className="flex flex-col gap-2">
             <label className="text-sm font-medium text-muted-foreground">{label} *</label>
@@ -290,14 +324,20 @@ function FileUploadZone({ label, file, inputRef, onChange }: FileUploadZoneProps
             <div 
                 onClick={() => inputRef.current?.click()}
                 className={`border-2 border-dashed rounded-xl p-4 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-200 h-32 ${
-                    file ? "border-[#15803D]/50 bg-[#15803D]/5 hover:bg-[#15803D]/10" : "border-border bg-background hover:bg-surface/50"
+                    isUploaded ? "border-[#15803D]/50 bg-[#15803D]/5 hover:bg-[#15803D]/10" : "border-border bg-background hover:bg-surface/50"
                 }`}
             >
                 {file ? (
                     <>
                         <CheckCircle2 className="w-8 h-8 text-[#15803D] mb-2" />
                         <span className="text-sm font-medium text-foreground truncate max-w-full px-2">{file.name}</span>
-                        <span className="text-xs text-muted-foreground mt-1">Click to replace</span>
+                        <span className="text-xs text-muted-foreground mt-1">Ready to upload • Click to change</span>
+                    </>
+                ) : existingUrl ? (
+                    <>
+                        <CheckCircle2 className="w-8 h-8 text-[#15803D] mb-2" />
+                        <span className="text-sm font-medium text-foreground truncate max-w-full px-2">Document on file (PDF)</span>
+                        <span className="text-xs text-muted-foreground mt-1">Saved • Click to replace</span>
                     </>
                 ) : (
                     <>

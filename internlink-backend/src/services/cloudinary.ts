@@ -2,11 +2,17 @@ import { v2 as cloudinary } from "cloudinary";
 import * as dotenv from "dotenv";
 dotenv.config();
 
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+const cloudinaryUrl = process.env.CLOUDINARY_URL?.replace(/[<>]/g, "").trim();
+
+if (cloudinaryUrl) {
+  cloudinary.config({ url: cloudinaryUrl });
+} else {
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME?.replace(/[<>]/g, "").trim(),
+    api_key: process.env.CLOUDINARY_API_KEY?.replace(/[<>]/g, "").trim(),
+    api_secret: process.env.CLOUDINARY_API_SECRET?.replace(/[<>]/g, "").trim(),
+  });
+}
 
 export async function uploadFile(
   buffer: Buffer,

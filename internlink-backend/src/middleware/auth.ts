@@ -1,10 +1,13 @@
 import type { Request, Response, NextFunction } from "express";
+import { db } from "../db";
+import { session as sessionTable } from "../db/auth-schema";
+import { eq } from "drizzle-orm";
 
 export interface AuthRequest extends Request {
   userId?: string;
 }
 
-export async function verifyJwt(req: AuthRequest, res: Response, next: NextFunction) {
+export async function verifyJwt(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -13,14 +16,12 @@ export async function verifyJwt(req: AuthRequest, res: Response, next: NextFunct
   }
 
   const token = authHeader.split(" ")[1];
+  if (!token) {
+    res.status(401).json({ error: "Unauthorized: empty token" });
+    return;
+  }
 
   try {
-    // Better Auth session token verification via the database
-    // We validate sessions by querying the sessions table directly
-    const { db } = await import("../db");
-    const { session: sessionTable, user: userTable } = await import("../db/auth-schema");
-    const { eq } = await import("drizzle-orm");
-
     const [sessionRecord] = await db
       .select({ userId: sessionTable.userId, expiresAt: sessionTable.expiresAt })
       .from(sessionTable)

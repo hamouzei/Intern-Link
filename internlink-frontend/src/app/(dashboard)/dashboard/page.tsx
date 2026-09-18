@@ -116,14 +116,22 @@ export default function DashboardPage() {
                     </td>
                   </tr>
                 ) : (
-                    recentApps.map((app) => (
-                      <tr key={app.id} className="hover:bg-white/5 transition-colors">
-                        <td className="px-6 py-4 font-medium text-foreground">{app.companyName || app.companyId || "Unknown Company"}</td>
-                        <td className="px-6 py-4 text-muted-foreground">
-                          {app.createdAt ? new Date(app.createdAt).toLocaleDateString() : "Pending"}
-                        </td>
-                        <td className="px-6 py-4">
-                        <Badge variant="default">Sent</Badge>
+                  recentApps.map((app) => (
+                    <tr key={app.id} className="hover:bg-white/5 transition-colors">
+                      <td className="px-6 py-4 font-medium text-foreground">{app.companyName || "Unknown Company"}</td>
+                      <td className="px-6 py-4 text-muted-foreground">
+                        {app.sentAt || app.createdAt
+                          ? new Date(app.sentAt || app.createdAt).toLocaleDateString(undefined, {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            })
+                          : "Recently"}
+                      </td>
+                      <td className="px-6 py-4">
+                        <Badge variant={app.status === "accepted" ? "success" : app.status === "rejected" ? "danger" : "default"}>
+                          {app.status || "Sent"}
+                        </Badge>
                       </td>
                     </tr>
                   ))

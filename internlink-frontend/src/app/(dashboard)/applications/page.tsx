@@ -15,10 +15,13 @@ import Link from "next/link";
 type Application = {
     id: string;
     companyName: string;
-    companyId: string; // The backend returns companyId currently as companyName based on previous logic, adjusting to handle gracefully
-    createdAt: string; // Backend actually sends createdAt instead of sentAt based on Dashboard logic
+    companyId?: string;
     status: string;
+    sentAt: string;
+    createdAt?: string;
     roleApplied?: string;
+    emailSubject?: string;
+    emailBody?: string;
 };
 
 const containerVars = {
@@ -140,7 +143,7 @@ export default function ApplicationsPage() {
                                         </div>
                                         <div className="flex items-center text-sm text-muted-foreground gap-2">
                                             <Calendar className="w-4 h-4" />
-                                            <span>{new Date(app.createdAt || new Date()).toLocaleDateString(undefined, {
+                                            <span>{new Date(app.sentAt || app.createdAt || new Date()).toLocaleDateString(undefined, {
                                                 year: 'numeric',
                                                 month: 'long',
                                                 day: 'numeric'

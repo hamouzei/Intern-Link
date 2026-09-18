@@ -31,7 +31,7 @@ export async function apiUpload<T>(
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: "Upload failed" }));
-    throw new Error(err.error || "Upload failed");
+    throw new Error(err.detail || err.error || "Upload failed");
   }
   return res.json();
 }

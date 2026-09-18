@@ -38,9 +38,9 @@ router.post("/cv", verifyJwt, upload.single("cv"), async (req: AuthRequest, res:
     }
 
     res.json({ url });
-  } catch (err) {
+  } catch (err: any) {
     console.error("CV upload error:", err);
-    res.status(500).json({ error: "Upload failed" });
+    res.status(500).json({ error: "Upload failed", detail: err?.message || String(err) });
   }
 });
 
@@ -61,9 +61,9 @@ router.post("/support-letter", verifyJwt, upload.single("supportLetter"), async 
     }
 
     res.json({ url });
-  } catch (err) {
+  } catch (err: any) {
     console.error("Support letter upload error:", err);
-    res.status(500).json({ error: "Upload failed" });
+    res.status(500).json({ error: "Upload failed", detail: err?.message || String(err) });
   }
 });
 

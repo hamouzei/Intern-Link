@@ -1,4 +1,5 @@
 import { Router, Response } from "express";
+import { z } from "zod";
 import { AuthRequest, verifyJwt } from "../middleware/auth";
 import { db } from "../db";
 import { companies, applications, documents } from "../db/schema";
@@ -10,16 +11,34 @@ import { downloadCloudinaryFile } from "../services/cloudinary";
 
 const router = Router();
 
+const generateSchema = z.object({
+  company_id: z.string().uuid("Invalid company ID"),
+});
+
+const sendSchema = z.object({
+  company_id: z.string().uuid("Invalid company ID"),
+  email_subject: z.string().trim().min(1, "Email subject is required"),
+  email_body: z.string().trim().min(1, "Email body is required"),
+});
+
 // POST /applications/generate
-router.post("/generate", verifyJwt, async (req: AuthRequest, res: Response) => {
-  const { company_id } = req.body;
-  if (!company_id) { res.status(400).json({ error: "Missing company_id" }); return; }
+router.post("/generate", verifyJwt, async (req: AuthRequest, res: Response): Promise<void> => {
+  const parseResult = generateSchema.safeParse(req.body);
+  if (!parseResult.success) {
+    res.status(400).json({ error: "Validation error", details: parseResult.error.flatten().fieldErrors });
+    return;
+  }
+
+  const { company_id } = parseResult.data;
 
   try {
     const [userRecord] = await db.select().from(user).where(eq(user.id, req.userId!)).limit(1);
     const [company] = await db.select().from(companies).where(eq(companies.id, company_id)).limit(1);
 
-    if (!userRecord || !company) { res.status(404).json({ error: "User or Company not found" }); return; }
+    if (!userRecord || !company) {
+      res.status(404).json({ error: "User or Company not found" });
+      return;
+    }
 
     // Required fields check
     if (!userRecord.university || !userRecord.roleApplied || !userRecord.bio) {
@@ -45,8 +64,14 @@ router.post("/generate", verifyJwt, async (req: AuthRequest, res: Response) => {
 });
 
 // POST /applications/send
-router.post("/send", verifyJwt, async (req: AuthRequest, res: Response) => {
-  const { company_id, email_subject, email_body } = req.body;
+router.post("/send", verifyJwt, async (req: AuthRequest, res: Response): Promise<void> => {
+  const parseResult = sendSchema.safeParse(req.body);
+  if (!parseResult.success) {
+    res.status(400).json({ error: "Validation error", details: parseResult.error.flatten().fieldErrors });
+    return;
+  }
+
+  const { company_id, email_subject, email_body } = parseResult.data;
 
   try {
     // Rate limiting check: max 5 apps per day
@@ -71,7 +96,7 @@ router.post("/send", verifyJwt, async (req: AuthRequest, res: Response) => {
     const [company] = await db.select().from(companies).where(eq(companies.id, company_id)).limit(1);
 
     if (!userRecord || !company || !doc || !doc.cvUrl || !doc.supportLetterUrl) {
-      res.status(400).json({ error: "Missing proflie or documents." });
+      res.status(400).json({ error: "Missing profile or required documents (CV and support letter are required)." });
       return;
     }
 
@@ -82,7 +107,7 @@ router.post("/send", verifyJwt, async (req: AuthRequest, res: Response) => {
       downloadCloudinaryFile(doc.supportLetterUrl!),
     ]);
 
-    // Send email with buffer attachments
+    // Send email with buffer attachments and set reply_to as the student's email
     await sendApplicationEmail(
       company.email,
       email_subject,
@@ -90,7 +115,8 @@ router.post("/send", verifyJwt, async (req: AuthRequest, res: Response) => {
       [
         { filename: `${baseName}_CV.pdf`, content: cvBuffer },
         { filename: `${baseName}_Letter.pdf`, content: letterBuffer },
-      ]
+      ],
+      userRecord.email
     );
 
     // Record application
@@ -103,14 +129,15 @@ router.post("/send", verifyJwt, async (req: AuthRequest, res: Response) => {
     });
 
     res.json({ success: true });
-  } catch (err: any) {
-    console.error("Send application error:", err);
-    res.status(500).json({ error: "Internal server error", detail: err?.message || String(err) });
+  } catch (err: unknown) {
+    const error = err as Error;
+    console.error("Send application error:", error);
+    res.status(500).json({ error: "Internal server error", detail: error?.message || String(err) });
   }
 });
 
 // GET /applications
-router.get("/", verifyJwt, async (req: AuthRequest, res: Response) => {
+router.get("/", verifyJwt, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const apps = await db
       .select({
@@ -119,6 +146,7 @@ router.get("/", verifyJwt, async (req: AuthRequest, res: Response) => {
         roleApplied: user.roleApplied,
         status: applications.status,
         sentAt: applications.sentAt,
+        createdAt: applications.sentAt, // Alias for frontend compatibility
         emailSubject: applications.emailSubject,
         emailBody: applications.emailBody
       })

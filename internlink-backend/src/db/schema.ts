@@ -1,9 +1,9 @@
-import { pgTable, uuid, text, boolean, timestamp } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, boolean, timestamp, index } from 'drizzle-orm/pg-core';
 import { user } from './auth-schema';
 
 export const documents = pgTable('documents', {
   id: uuid('id').primaryKey().defaultRandom(),
-  userId: text('user_id').references(() => user.id, { onDelete: 'cascade' }),
+  userId: text('user_id').references(() => user.id, { onDelete: 'cascade' }).unique(),
   cvUrl: text('cv_url'),
   supportLetterUrl: text('support_letter_url'),
   uploadedAt: timestamp('uploaded_at').defaultNow(),
@@ -28,4 +28,8 @@ export const applications = pgTable('applications', {
   emailSubject: text('email_subject'),
   emailBody: text('email_body'),
   sentAt: timestamp('sent_at').defaultNow(),
-});
+}, (table) => [
+  index('applications_user_id_idx').on(table.userId),
+  index('applications_company_id_idx').on(table.companyId),
+  index('applications_sent_at_idx').on(table.sentAt),
+]);
