@@ -7,7 +7,7 @@ import { user } from "../db/auth-schema";
 import { eq, and, sql } from "drizzle-orm";
 import { generateInternshipEmail } from "../services/ai";
 import { sendApplicationEmail } from "../services/email";
-import { downloadCloudinaryFile } from "../services/cloudinary";
+import { downloadCloudinaryFiles } from "../services/cloudinary";
 
 const router = Router();
 
@@ -78,34 +78,45 @@ router.post("/send", verifyJwt, async (req: AuthRequest, res: Response): Promise
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const [countResult] = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(applications)
-      .where(and(
-        eq(applications.userId, req.userId!),
-        sql`${applications.sentAt} >= ${today.toISOString()}`
-      ));
+    // Parallelize rate limit count, user profile, documents, and company queries
+    const [
+      [countResult],
+      [userRecord],
+      [doc],
+      [company]
+    ] = await Promise.all([
+      db
+        .select({ count: sql<number>`count(*)` })
+        .from(applications)
+        .where(and(
+          eq(applications.userId, req.userId!),
+          sql`${applications.sentAt} >= ${today.toISOString()}`
+        )),
+      db.select().from(user).where(eq(user.id, req.userId!)).limit(1),
+      db.select().from(documents).where(eq(documents.userId, req.userId!)).limit(1),
+      db.select().from(companies).where(eq(companies.id, company_id)).limit(1),
+    ]);
 
-    if (Number(countResult.count) >= 5) {
+    if (countResult && Number(countResult.count) >= 5) {
       res.status(429).json({ error: "Daily application limit reached (5/day)." });
       return;
     }
-
-    const [userRecord] = await db.select().from(user).where(eq(user.id, req.userId!)).limit(1);
-    const [doc] = await db.select().from(documents).where(eq(documents.userId, req.userId!)).limit(1);
-    const [company] = await db.select().from(companies).where(eq(companies.id, company_id)).limit(1);
 
     if (!userRecord || !company || !doc || !doc.cvUrl || !doc.supportLetterUrl) {
       res.status(400).json({ error: "Missing profile or required documents (CV and support letter are required)." });
       return;
     }
 
-    // Download attachments from Cloudinary using backend credentials (bypasses access restrictions)
+    // Download attachments from Cloudinary (leveraging in-memory cache or bundled single archive)
     const baseName = userRecord.name.replace(/\s+/g, '_');
-    const [cvBuffer, letterBuffer] = await Promise.all([
-      downloadCloudinaryFile(doc.cvUrl!),
-      downloadCloudinaryFile(doc.supportLetterUrl!),
-    ]);
+    const filesMap = await downloadCloudinaryFiles([doc.cvUrl!, doc.supportLetterUrl!]);
+    const cvBuffer = filesMap.get(doc.cvUrl!);
+    const letterBuffer = filesMap.get(doc.supportLetterUrl!);
+
+    if (!cvBuffer || !letterBuffer) {
+      res.status(500).json({ error: "Failed to retrieve application documents." });
+      return;
+    }
 
     // Send email with buffer attachments and set reply_to as the student's email
     await sendApplicationEmail(

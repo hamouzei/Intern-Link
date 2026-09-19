@@ -5,18 +5,20 @@ export interface BadgeProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: "default" | "success" | "warning" | "danger" | "outline"
 }
 
+const variantStyles: Record<NonNullable<BadgeProps["variant"]>, string> = {
+  default: "border-[#171717] bg-[#0A0A0A] text-[#D4D4D4]",
+  success: "border-[#737373] bg-[#171717] text-[#FAFAFA]",
+  warning: "border-[#737373] bg-[#0A0A0A] text-[#D4D4D4]",
+  danger: "border-[#525252] bg-[#171717] text-[#FAFAFA]",
+  outline: "border-[#171717] bg-transparent text-[#737373]"
+}
+
 function Badge({ className, variant = "default", ...props }: BadgeProps) {
   return (
     <div
       className={cn(
-        "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-        {
-          "border-transparent bg-primary text-primary-foreground": variant === "default",
-          "border-transparent bg-[#15803D]/10 text-[#15803D]": variant === "success",
-          "border-transparent bg-yellow-500/10 text-yellow-500": variant === "warning",
-          "border-transparent bg-[#B91C1C]/10 text-[#B91C1C]": variant === "danger",
-          "text-foreground border-border": variant === "outline"
-        },
+        "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors",
+        variantStyles[variant] || variantStyles.default,
         className
       )}
       {...props}

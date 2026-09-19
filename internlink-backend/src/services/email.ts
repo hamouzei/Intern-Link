@@ -14,6 +14,35 @@ export async function sendApplicationEmail(
 ) {
   try {
     const fromAddress = process.env.EMAIL_FROM || "InternLink <onboarding@resend.dev>";
+    const isSandbox = fromAddress.includes("onboarding@resend.dev");
+    const devFallback = process.env.DEV_FALLBACK_EMAIL || "hammada3971@gmail.com";
+
+    // If running in Resend free test sandbox mode, direct immediately to the verified inbox
+    // to avoid wasting 5+ seconds on guaranteed 403 network failures.
+    if (isSandbox && to !== devFallback) {
+      console.log(`[Resend Sandbox Mode] Delivering application for ${to} to verified inbox (${devFallback})...`);
+      const { data, error } = await resend.emails.send({
+        from: fromAddress,
+        to: devFallback,
+        subject: `[DEV TEST FOR: ${to}] ${subject}`,
+        text: `[NOTE: Delivered to your verified developer email because Resend is in free testing sandbox mode. Target company was: ${to} | Applicant: ${replyTo || "N/A"}]\n\n${body}`,
+        replyTo: replyTo,
+        attachments: attachments.map(att => ({
+          filename: att.filename,
+          content: att.content,
+        })),
+      });
+
+      if (error) {
+        console.error("Resend sandbox error:", error);
+        throw new Error(error.message);
+      }
+
+      console.log(`Email delivered to verified developer inbox (${devFallback}), ID: ${data?.id}`);
+      return;
+    }
+
+    // Production dispatch or direct send to verified email
     const { data, error } = await resend.emails.send({
       from: fromAddress,
       to,
@@ -27,15 +56,14 @@ export async function sendApplicationEmail(
     });
 
     if (error) {
-      // If Resend test domain restriction is hit, deliver to developer/verified email
+      // Fallback in case sandbox restriction is encountered unexpectedly
       if (error.message.includes("You can only send testing emails to your own email address")) {
-        console.warn(`Resend test domain restriction: cannot send to ${to}. Routing to verified test address...`);
-        const fallbackTarget = replyTo || "hammada3971@gmail.com";
+        console.warn(`Resend sandbox restriction detected for ${to}. Rerouting to ${devFallback}...`);
         const fallbackRes = await resend.emails.send({
-          from: "InternLink <onboarding@resend.dev>",
-          to: fallbackTarget,
+          from: fromAddress,
+          to: devFallback,
           subject: `[DEV TEST FOR: ${to}] ${subject}`,
-          text: `[NOTE: Sent to your email because Resend is in free testing sandbox mode. Target company was: ${to}]\n\n${body}`,
+          text: `[NOTE: Sent to verified developer email due to sandbox restriction. Target company: ${to}]\n\n${body}`,
           replyTo: replyTo,
           attachments: attachments.map(att => ({
             filename: att.filename,
@@ -43,25 +71,8 @@ export async function sendApplicationEmail(
           })),
         });
 
-        if (fallbackRes.error) {
-          // If replyTo is not verified by Resend account, deliver directly to Resend account owner
-          const ownerRes = await resend.emails.send({
-            from: "InternLink <onboarding@resend.dev>",
-            to: "hammada3971@gmail.com",
-            subject: `[DEV TEST FOR: ${to}] ${subject}`,
-            text: `[NOTE: Sent to Resend account owner because of sandbox mode. Target company: ${to} | Applicant: ${replyTo}]\n\n${body}`,
-            replyTo: replyTo,
-            attachments: attachments.map(att => ({
-              filename: att.filename,
-              content: att.content,
-            })),
-          });
-          if (ownerRes.error) throw new Error(ownerRes.error.message);
-          console.log(`Email delivered to Resend verified owner (hammada3971@gmail.com), ID: ${ownerRes.data?.id}`);
-          return;
-        }
-
-        console.log(`Email delivered to user test address (${fallbackTarget}), ID: ${fallbackRes.data?.id}`);
+        if (fallbackRes.error) throw new Error(fallbackRes.error.message);
+        console.log(`Email delivered via fallback to ${devFallback}, ID: ${fallbackRes.data?.id}`);
         return;
       }
 
@@ -75,5 +86,3 @@ export async function sendApplicationEmail(
     throw error;
   }
 }
-
-
